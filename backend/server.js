@@ -6,6 +6,7 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3001;
 
+// 🔥 API KEY (seninki)
 const API_KEY = "431672076bmsh5c6f32152d56b04p17e7a4jsn32ef1d20eb5c";
 
 const BASE_URL = "https://nba-api-free-data.p.rapidapi.com";
@@ -15,7 +16,7 @@ const headers = {
   "X-RapidAPI-Host": "nba-api-free-data.p.rapidapi.com",
 };
 
-// ✅ ÇALIŞAN TEST ENDPOINT
+// ✅ TEST (çalıştığını görmek için)
 app.get("/api/test", async (req, res) => {
   try {
     const response = await fetch(`${BASE_URL}/nba-atlantic-team-list`, {
@@ -23,7 +24,6 @@ app.get("/api/test", async (req, res) => {
     });
 
     const data = await response.json();
-
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -31,7 +31,7 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
-// ❌ ŞİMDİLİK FAKE GAME (API'de games yok)
+// ✅ FRONTEND İÇİN (şu an fake ama çalışacak)
 app.get("/api/games/next", async (req, res) => {
   res.json([
     {
@@ -48,5 +48,5 @@ app.get("/api/games/next", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Server running on ${PORT} 🚀`);
 });
