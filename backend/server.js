@@ -4,59 +4,45 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 3001;
+const API_KEY = "BURAYA_SENIN_RAPIDAPI_KEY";
+const API_HOST = "nba-api-free-data.p.rapidapi.com";
 
-const API_KEY = "431672076bmsh5c6f32152d56b04p17e7a4jsn32ef1d20eb5c";
-
-const BASE_URL = "https://nba-api-free-data.p.rapidapi.com";
-
-const headers = {
-  "X-RapidAPI-Key": API_KEY,
-  "X-RapidAPI-Host": "nba-api-free-data.p.rapidapi.com",
-};
-
-// ROOT
 app.get("/", (req, res) => {
   res.send("Backend çalışıyor 🚀");
 });
 
-// TEST
-app.get("/api/test", async (req, res) => {
+app.get("/api/games", async (req, res) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/nba-atlantic-team-list`,
-      { headers }
-    );
-
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: "API error" });
-  }
-});
-
-// 🔥 FRONTEND İÇİN DÜZELTİLDİ
-app.get("/api/games/next", async (req, res) => {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/nba-atlantic-team-list`,
-      { headers }
+      "https://nba-api-free-data.p.rapidapi.com/nba-scoreboard-by-date?date=20250120",
+      {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": API_KEY,
+          "x-rapidapi-host": API_HOST,
+        },
+      }
     );
 
     const data = await response.json();
 
-    // 🔥 DOĞRU PARSE
-    const teams = data?.response?.teamList || [];
+    const games =
+      data.response?.games?.map((game) => ({
+        id: game.id,
+        home: game.home?.name,
+        away: game.away?.name,
+        homeLogo: game.home?.logo,
+        awayLogo: game.away?.logo,
+        homeScore: game.home?.score,
+        awayScore: game.away?.score,
+        date: game.date,
+      })) || [];
 
-    res.json({
-      upcoming: teams,
-    });
+    res.json({ games });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Fetch failed" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT} 🚀`);
-});
+app.listen(3000, () => console.log("Server running 🚀"));

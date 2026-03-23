@@ -30,6 +30,7 @@
   transform: rotateY(180deg);
 }
 
+/* FRONT */
 .front,
 .back {
   position: absolute;
@@ -44,11 +45,13 @@
   justify-content: center;
 }
 
+/* BACK */
 .back {
   transform: rotateY(180deg);
   background: #1e293b;
 }
 
+/* IMAGE */
 img {
   width: 60px;
   margin: 5px;
