@@ -1,11 +1,10 @@
-import express from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
 app.use(cors());
 
-const API_KEY = "BURAYA_SENIN_RAPIDAPI_KEY";
-const API_HOST = "nba-api-free-data.p.rapidapi.com";
+const PORT = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
   res.send("Backend çalışıyor 🚀");
@@ -14,35 +13,53 @@ app.get("/", (req, res) => {
 app.get("/api/games", async (req, res) => {
   try {
     const response = await fetch(
-      "https://nba-api-free-data.p.rapidapi.com/nba-scoreboard-by-date?date=20250120",
-      {
-        method: "GET",
-        headers: {
-          "x-rapidapi-key": API_KEY,
-          "x-rapidapi-host": API_HOST,
-        },
-      }
+      "https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
     );
+
+    if (!response.ok) {
+      return res.status(500).json({ error: "API error" });
+    }
 
     const data = await response.json();
 
-    const games =
-      data.response?.games?.map((game) => ({
-        id: game.id,
-        home: game.home?.name,
-        away: game.away?.name,
-        homeLogo: game.home?.logo,
-        awayLogo: game.away?.logo,
-        homeScore: game.home?.score,
-        awayScore: game.away?.score,
-        date: game.date,
-      })) || [];
+    const events = data.events || [];
+
+    if (events.length === 0) {
+      return res.json({ games: [] });
+    }
+
+    const games = events.map((event, index) => {
+      const comp = event.competitions[0];
+
+      const home = comp.competitors.find(
+        (t) => t.homeAway === "home"
+      );
+
+      const away = comp.competitors.find(
+        (t) => t.homeAway === "away"
+      );
+
+      return {
+        id: index,
+        home: home?.team?.displayName || "Unknown",
+        away: away?.team?.displayName || "Unknown",
+        homeScore: home?.score || "0",
+        awayScore: away?.score || "0",
+        homeLogo: home?.team?.logo,
+        awayLogo: away?.team?.logo,
+        date: event.date,
+        status: comp.status.type.description,
+      };
+    });
 
     res.json({ games });
+
   } catch (err) {
-    console.error(err);
+    console.error("FETCH ERROR:", err);
     res.status(500).json({ error: "Fetch failed" });
   }
 });
 
-app.listen(3000, () => console.log("Server running 🚀"));
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
