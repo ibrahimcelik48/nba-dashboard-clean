@@ -15,46 +15,41 @@ const headers = {
   "X-RapidAPI-Host": "nba-api-free-data.p.rapidapi.com",
 };
 
-// 🔥 ROOT TEST (artık boş gelmeyecek)
+// ROOT
 app.get("/", (req, res) => {
   res.send("Backend çalışıyor 🚀");
 });
 
-// 🔥 TEST ENDPOINT
+// TEST
 app.get("/api/test", async (req, res) => {
   try {
     const response = await fetch(
       `${BASE_URL}/nba-atlantic-team-list`,
-      {
-        method: "GET",
-        headers,
-      }
+      { headers }
     );
 
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "API error" });
   }
 });
 
-// 🔥 FRONTEND İÇİN
+// 🔥 FRONTEND İÇİN DÜZELTİLDİ
 app.get("/api/games/next", async (req, res) => {
   try {
     const response = await fetch(
       `${BASE_URL}/nba-atlantic-team-list`,
-      {
-        method: "GET",
-        headers,
-      }
+      { headers }
     );
 
     const data = await response.json();
 
-    // sadece örnek veri dönelim
+    // 🔥 DOĞRU PARSE
+    const teams = data?.response?.teamList || [];
+
     res.json({
-      upcoming: data.slice(0, 5),
+      upcoming: teams,
     });
   } catch (err) {
     console.error(err);
