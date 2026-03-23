@@ -3,20 +3,30 @@ import "./App.css";
 
 function App() {
   const [games, setGames] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch("https://nba-dashboard-backend.onrender.com/api/games")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        setGames(data.games || []);
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Backend hata verdi");
+        }
+        return res.json();
       })
-      .catch((err) => console.error(err));
+      .then((data) => {
+        setGames(data.games);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+      });
   }, []);
 
   return (
     <div className="app">
       <h1>NBA Dashboard</h1>
+
+      {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
       <div className="container">
         {games.map((game) => (
