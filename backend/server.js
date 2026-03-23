@@ -6,12 +6,10 @@ app.use(cors());
 
 const PORT = process.env.PORT || 5000;
 
-// TEST
 app.get("/", (req, res) => {
   res.send("Backend çalışıyor 🚀");
 });
 
-// 🔥 MAÇLAR (STABLE)
 app.get("/api/games", async (req, res) => {
   try {
     const response = await fetch(
@@ -20,9 +18,7 @@ app.get("/api/games", async (req, res) => {
 
     const data = await response.json();
 
-    const events = data.events || [];
-
-    const games = events.map((event, index) => {
+    const games = (data.events || []).map((event, index) => {
       const comp = event.competitions[0];
 
       const home = comp.competitors.find(t => t.homeAway === "home");
@@ -44,7 +40,6 @@ app.get("/api/games", async (req, res) => {
     res.json({ games });
 
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: "Fetch failed" });
   }
 });

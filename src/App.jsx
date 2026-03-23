@@ -3,32 +3,33 @@ import "./App.css";
 
 function App() {
   const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("https://nba-dashboard-backend.onrender.com/api/games")
-      .then(res => res.json())
+    fetch("https://nba-dashboard-backend.onrender.com/api/games") // 🔥 BURASI KRİTİK
+      .then(res => {
+        if (!res.ok) throw new Error("API error");
+        return res.json();
+      })
       .then(data => {
         setGames(data.games);
-        setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
+      .catch(err => {
+        setError(err.message);
       });
   }, []);
-
-  if (loading) return <h2>Yükleniyor...</h2>;
 
   return (
     <div className="app">
       <h1>NBA Dashboard</h1>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       <div className="grid">
         {games.map(game => (
           <div className="card" key={game.id}>
             <div className="inner">
 
-              {/* FRONT */}
               <div className="front">
                 <img src={game.homeLogo} />
                 <h3>{game.home}</h3>
@@ -39,17 +40,10 @@ function App() {
                 <h3>{game.away}</h3>
               </div>
 
-              {/* BACK */}
               <div className="back">
-                <h2>
-                  {game.homeScore} - {game.awayScore}
-                </h2>
-
+                <h2>{game.homeScore} - {game.awayScore}</h2>
                 <p>{game.status}</p>
-
-                <p>
-                  {new Date(game.date).toLocaleString()}
-                </p>
+                <p>{new Date(game.date).toLocaleString()}</p>
               </div>
 
             </div>
