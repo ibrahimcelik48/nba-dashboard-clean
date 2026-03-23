@@ -2,97 +2,53 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-
-app.use(cors({
-  origin: "*"
-}));
+app.use(cors());
 
 const PORT = process.env.PORT || 3001;
 
-const safeFetch = async (url, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+// 🔥 SENİN KEY (SS'ten aldım)
+const API_KEY = "431672076bmsh5c6f32152d56b04p17e7a4jsn32ef1d20eb5c";
 
-      const res = await fetch(url, {
-        signal: controller.signal,
-      });
+const BASE_URL = "https://nba-api-free-data.p.rapidapi.com";
 
-      clearTimeout(timeout);
-
-      if (!res.ok) throw new Error("API response not ok");
-
-      return await res.json();
-    } catch (err) {
-      console.log(`Retry ${i + 1} failed`);
-
-      if (i === retries - 1) {
-        console.error("FINAL FETCH ERROR:", err.message);
-        return null;
-      }
-    }
-  }
+const headers = {
+  "X-RapidAPI-Key": API_KEY,
+  "X-RapidAPI-Host": "nba-api-free-data.p.rapidapi.com",
 };
 
-const getGames = async () => {
-  const url = "https://api-nba-v1.p.rapidapi.com/games";
-
-  const data = await safeFetch(url);
-
-  if (!data || !data.response) return [];
-
-  return data.response;
-};
-
-const findNextGames = (games, count = 7) => {
-  if (!games || !Array.isArray(games)) return [];
-
-  const now = new Date();
-
-  return games
-    .filter((g) => g?.date?.start && new Date(g.date.start) > now)
-    .slice(0, count);
-};
-
-app.get("/api/games/next", async (req, res) => {
+// 🔥 TEST ENDPOINT (önce bunu deniyoruz)
+app.get("/api/test", async (req, res) => {
   try {
-    const games = await getGames();
+    const response = await fetch(`${BASE_URL}/nba-atlantic-team-list`, {
+      headers,
+    });
 
-    if (!games.length) {
-      return res.json([]); // ❗ crash yerine boş dön
-    }
-
-    const result = findNextGames(games);
-
-    res.json(result);
-  } catch (error) {
-    console.error("Next games error:", error);
-    res.json([]); // ❗ 500 yerine boş array
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "API çalışmadı" });
   }
 });
 
-app.get("/api/games/today", async (req, res) => {
+// 🔥 ŞİMDİ GAMES (GERÇEK MAÇ VERİSİ)
+app.get("/api/games/next", async (req, res) => {
   try {
-    const games = await getGames();
+    const response = await fetch(`${BASE_URL}/games`, {
+      headers,
+    });
 
-    if (!games.length) {
-      return res.json([]);
-    }
+    const data = await response.json();
 
-    const today = new Date().toISOString().split("T")[0];
+    console.log("GAMES:", data);
 
-    const result = games.filter((g) =>
-      g?.date?.start?.startsWith(today)
-    );
-
-    res.json(result);
-  } catch (error) {
-    console.error("Today games error:", error);
-    res.json([]);
+    res.json(data);
+  } catch (err) {
+    console.error("Games error:", err);
+    res.status(500).json({ error: "Games çekilemedi" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log("Server running 🚀");
+  console.log(`Server running on ${PORT} 🚀`);
 });
